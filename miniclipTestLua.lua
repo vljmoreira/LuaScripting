@@ -12,7 +12,7 @@ wallet = {
 
 
 
-function checkAmountCoinsEqual(coins,value)
+function checkAmountMoneyEqual(coins,value)
 	if(coins == value) then
 		return true
 	else
@@ -78,18 +78,25 @@ end
 -- By entering the London tier, the user pays 50 coins 
 
 
-function script_1(coins)
+	function script_1(coins)
 
-enterMatch()
-print ("clicou no botao:", clickButton("Play 1 v 1"))
-print ("Entrou na tier 1:", enterTier(1))
-wallet.coins = payCoins(wallet.coins,50)
+	-- Click button Shop
+	-- If the button wasn't clicked raise error
+	assert(clickButton("Play 1 v 1"), "FAILED: couldn't click Play 1 v 1")
+	-- Enter Tier London,it something went wrong raise and error
+	assert(enterTier(1), "FAILED: couldn't enter Tier London")
 
-print ("player has ", wallet.coins)
-end
+	-- know the value of player cash after entering the tier
+	-- should have less 50 coins from player wallet for entering the tier
+	coinsAfterPay = payCoins(wallet.coins,50)
 
--- script_1(coins)
--- print("out of scope coins", coins)
+	-- verify the value on the wallet before enter tier with value after enter the tier 
+	if(checkAmountMoneyEqual(wallet.coins,coinsAfterPay)==true) then
+		print("Test FAILED: payment from entering London Tier not deducted")
+	else 
+		print("Test PASSED: Enter London tier and payed 50 coins")
+	end
+	end
 
 -- Test Script 2 --
 -- Create a test script which checks that if a player 
@@ -99,18 +106,36 @@ end
 function script_2(coins)
 
 enterMatch()
+initialCoins= wallet.coins
 
- if (winCurrentMatch() == true) then
- 	--receives coins
-	 wallet.coins=winCoins(wallet.coins,200)
-	-- check if value was added to the wallet
- elseif(loseCurrentMatch() == true) then
- 	wallet.coins=wallet.coins
- end
+--if (winCurrentMatch()) then
+	-- Check if the player received the money
+	if(checkAmountMoneyEqual(wallet.coins,winCoins(initialCoins,200))==true) then
+		print("Error: payment not received")
+		check_1=0
+	else 
+		print("payment received")
+		check_1=1
+	end
 
-end
-
---script_2(coins)
+	-- elseif(loseCurrentMatch()) then
+		-- Coins in the wallet should be equal to the initial value
+		if(checkAmountMoneyEqual(wallet.coins,initialCoins)==true) then
+			print("Player lost the game, didn't receive money")
+			check_2=1
+		else 
+			print("Error: Player lost the game but deducted money")
+			check_2=0
+		end
+		-- end
+		if (check_1==1 and check_2==1) then
+			print("PASSED: Win and lose game are working")
+		elseif (check_1 ~= 1) then
+			print ("FAILED: Win game playment not working")
+		elseif (check_2 ~= 1) then
+			print("FAILED: Lose game not working")
+		end
+	end
 
 --Test Script 3
 -- Imagine we have a cue named “Standard” which costs 5 Cash available  in the game’s shop. 
@@ -121,36 +146,33 @@ end
 -- get current cash value before purchase
 currentCash=wallet.cash
 currentCue=wallet.cue
-newCue="Standard"
-
-if(newCue==currentCue) then
-	print("Alteraton not done")
-else 
-	print("oki")
-end
-
-
 
 -- Click button Shop
-if (clickButton("Shop")) then
-	--Click button buy_standard_cue
-	if (clickButton("buy_standard_cue"))then
-		-- check if the purchase is working
-		-- purchase is working if there's less 5 cash in the wallet
-		-- cue value in wallet is Standard
-		local purchasedCash = wallet.cash-5
+-- If the button wasn't clicked raise error, if it's a need to handle errors maybe use pcall or xpcall ?
+assert(clickButton("Shop"), "FAILED: couldn't click button_Shop")
+--Click button buy_standard_cue
+-- If the button wasn't clicked raise error
+assert(clickButton("buy_standard_cue"), "FAILED: couldn't click buy_standard_cue")
 
-		if (checkAmountCoinsEqual(currentCash,purchasedCash)==false) then
-			-- check cue on the wallet
-			-- considering that wallet.cue will have only one value at the time, if it had more I need to interate over the cue values.
-			wallet.cue="Standard"
+-- check if the purchase is working
+-- purchase is working if there's less 5 cash in the wallet
+-- and the cue value in wallet is set to Standard
+local purchasedCash = wallet.cash-5
+local newStandardCue="Standard"
 
-		end
+if ((currentCash-purchasedCash) == 5) then
+-- check cue on the wallet
+-- considering that wallet.cue will have only one value at the time, if it had more I need to interate over the cue values.
+	if( wallet.cue==newStandardCue) then
+		print("PASSED: The Standard cue was bought by the player")
 	else
-		print("Error click Button buy_standard_cue")
+		print ("FAILED: Cue Standard not bought ")
 	end
-else
-	print("Error click Button Shop")
 end
+
+
+
+
+
 
 
