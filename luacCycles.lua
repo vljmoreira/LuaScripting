@@ -14,6 +14,9 @@ local listaCompras = {
 
 }
 --pairs() retorna value - key a orden n e espelicita
-print (listaCompras)
+--print (listaCompras)
 
---ipairs() retorna index-value usado para tabelas numericas, tabelas n numericas sao ignoradas
+for k,v in listaCompras do
+    print(listaCompras[v])
+end
+    --ipairs() retorna index-value usado para tabelas numericas, tabelas n numericas sao ignoradas
